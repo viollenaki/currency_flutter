@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'events.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -13,6 +14,26 @@ class _HomeViewState extends State<HomeView> {
   
   // List of currencies
   final List<String> _currencies = ['USD', 'EUR', 'RUB'];
+
+  Widget _buildNavItemWithRoute(IconData icon, String label) {
+    return Column(
+      children: [
+        IconButton(
+          icon: Icon(icon, color: Colors.blue),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const EventsView()),
+            );
+          },
+        ),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.blue, fontSize: 12),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,6 +143,8 @@ class _HomeViewState extends State<HomeView> {
                       _buildNavItem(Icons.history, 'История'),
                       const SizedBox(width: 40),
                       _buildNavItem(Icons.bar_chart, 'Статистика'),
+                      const SizedBox(width: 40),
+                      _buildNavItemWithRoute(Icons.event, 'Events'),
                     ],
                   ),
                 ),
