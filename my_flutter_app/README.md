@@ -5,7 +5,7 @@ This is a Flutter application that serves as a template for building mobile appl
 ## Project Structure
 
 ```
-my_flutter_app
+EXCHANGER
 ├── android/                # Android-specific files
 ├── ios/                    # iOS-specific files
 ├── lib                     # Main application code
@@ -26,8 +26,8 @@ To get started with this Flutter application, follow these steps:
 
 1. **Clone the repository:**
    ```
-   git clone https://github.com/your_username/my_flutter_app.git
-   cd my_flutter_app
+   git clone https://github.com/your_username/EXCHANGER.git
+   cd EXCHANGER
    ```
 
 2. **Install dependencies:**

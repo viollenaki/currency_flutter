@@ -51,7 +51,8 @@ class _AddCurrencyViewState extends State<AddCurrencyView> {
                 height: 45,
                 child: ElevatedButton(
                   onPressed: () {
-                    // логика добавления валюты
+                    // Logic to add currency
+                    Navigator.pop(context); // Return to HomeView
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
@@ -107,7 +108,8 @@ class _AddCurrencyViewState extends State<AddCurrencyView> {
         hintText: hint,
         filled: true,
         fillColor: Colors.grey[200],
-        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -123,9 +125,11 @@ class _AddCurrencyViewState extends State<AddCurrencyView> {
       selectedItemColor: Colors.blue,
       unselectedItemColor: Colors.black,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.compare_arrows), label: 'Продажа/покупка'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.compare_arrows), label: 'Продажа/покупка'),
         BottomNavigationBarItem(icon: Icon(Icons.history), label: 'История'),
-        BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Статистика'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart), label: 'Статистика'),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
       ],
     );

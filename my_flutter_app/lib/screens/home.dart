@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'events.dart';
+import 'package:EXCHANGER/screens/add_currensy.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -32,8 +33,10 @@ class _HomeViewState extends State<HomeView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildCircleAction(Icons.arrow_downward, 'ПОКУПКА', Colors.green),
-                      _buildCircleAction(Icons.arrow_upward, 'ПРОДАЖА', Colors.red),
+                      _buildCircleAction(
+                          Icons.arrow_downward, 'ПОКУПКА', Colors.green),
+                      _buildCircleAction(
+                          Icons.arrow_upward, 'ПРОДАЖА', Colors.red),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -106,7 +109,8 @@ class _HomeViewState extends State<HomeView> {
         hintText: hint,
         filled: true,
         fillColor: Colors.grey[200],
-        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -157,7 +161,8 @@ class _HomeViewState extends State<HomeView> {
           children: row.map((key) {
             return key.isEmpty
                 ? const SizedBox(width: 70, height: 40)
-                : _buildKeypadButton(key, color: key == '⌫' || key == '↩' ? Colors.grey : null);
+                : _buildKeypadButton(key,
+                    color: key == '⌫' || key == '↩' ? Colors.grey : null);
           }).toList(),
         );
       }).toList(),
@@ -169,7 +174,19 @@ class _HomeViewState extends State<HomeView> {
       width: double.infinity,
       height: 45,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          if (text == 'Добавить событие') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddCurrencyView()),
+            );
+          } else if (text == 'События') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const EventsView()),
+            );
+          }
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue,
           shape: RoundedRectangleBorder(
@@ -191,9 +208,11 @@ class _HomeViewState extends State<HomeView> {
       selectedItemColor: Colors.blue,
       unselectedItemColor: Colors.black,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.compare_arrows), label: 'Продажа/покупка'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.compare_arrows), label: 'Продажа/покупка'),
         BottomNavigationBarItem(icon: Icon(Icons.history), label: 'История'),
-        BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Статистика'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart), label: 'Статистика'),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
       ],
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/screens/home.dart';
+import 'package:EXCHANGER/screens/home.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:EXCHANGER/screens/login.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: HomeView(),// LoginView(),
+      home: const LoginView(), // Set LoginView as the initial screen
     );
   }
 }

@@ -1,4 +1,4 @@
-name: my_flutter_app
+name: EXCHANGER
 description: A new Flutter project.
 publish_to: 'none' 
 
@@ -9,6 +9,7 @@ dependencies:
   flutter:
     sdk: flutter
   intl: ^0.20.2
+  http: ^0.13.3
 
 dev_dependencies:
   flutter_test:

@@ -41,8 +41,18 @@ class _EventsViewState extends State<EventsView> {
 
   String _monthName(int month) {
     const months = [
-      'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+      'Январь',
+      'Февраль',
+      'Март',
+      'Апрель',
+      'Май',
+      'Июнь',
+      'Июль',
+      'Август',
+      'Сентябрь',
+      'Октябрь',
+      'Ноябрь',
+      'Декабрь'
     ];
     return months[month - 1];
   }
@@ -69,24 +79,25 @@ class _EventsViewState extends State<EventsView> {
             ],
           ),
           ...currencies.map((currency) => Row(
-            children: [
-              SizedBox(width: 35, child: Text(currency)),
-              ...List.generate(6, (index) {
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-                    child: Container(
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(5),
+                children: [
+                  SizedBox(width: 35, child: Text(currency)),
+                  ...List.generate(6, (index) {
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 2, vertical: 4),
+                        child: Container(
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              })
-            ],
-          ))
+                    );
+                  })
+                ],
+              ))
         ],
       ),
     );
@@ -161,6 +172,12 @@ class _EventsViewState extends State<EventsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context), // Navigate back to HomeView
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
