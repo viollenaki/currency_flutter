@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'events.dart';
 import 'package:EXCHANGER/screens/add_currensy.dart';
+import 'package:EXCHANGER/screens/setting.dart';
+import 'package:EXCHANGER/screens/history.dart';
+import 'package:EXCHANGER/screens/Statictics.dart';
+
+
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -202,19 +207,38 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: Colors.blue,
-      unselectedItemColor: Colors.black,
-      items: const [
-        BottomNavigationBarItem(
-            icon: Icon(Icons.compare_arrows), label: 'Продажа/покупка'),
-        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'История'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart), label: 'Статистика'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
-      ],
-    );
-  }
+  return BottomNavigationBar(
+    currentIndex: 0,
+    type: BottomNavigationBarType.fixed,
+    selectedItemColor: Colors.blue,
+    unselectedItemColor: Colors.black,
+    onTap: (index) {
+      if (index == 1) { // Индекс кнопки "История"
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const HistoryView()),
+        );
+      } else if (index == 3) { // Индекс кнопки "Настройки"
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsView()),
+        );
+      }
+      else{
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) =>StaticticsView()),
+        );
+      }
+    },
+    items: const [
+      BottomNavigationBarItem(icon: Icon(Icons.compare_arrows), label: 'Продажа/покупка'),
+      BottomNavigationBarItem(icon: Icon(Icons.history), label: 'История'),
+      BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Статистика'),
+      BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
+    ],
+  );
+}
+
+
 }
