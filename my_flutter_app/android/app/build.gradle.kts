@@ -21,13 +21,13 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.EXCHANGER"
+        applicationId = "com.example.EXCHANGER.dev" 
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        minSdkVersion(flutter.minSdkVersion)
+        targetSdkVersion(flutter.targetSdkVersion)
+        versionCode = (System.getenv("FLUTTER_BUILD_NUMBER") ?: "1").toInt()
+        versionName = System.getenv("FLUTTER_BUILD_NAME") ?: "1.0"
     }
 
     buildTypes {

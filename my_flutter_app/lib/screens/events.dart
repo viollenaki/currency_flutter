@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:EXCHANGER/scripts/get_currencies.dart';
 
 class EventsView extends StatefulWidget {
   const EventsView({Key? key}) : super(key: key);
@@ -9,7 +10,30 @@ class EventsView extends StatefulWidget {
 
 class _EventsViewState extends State<EventsView> {
   DateTime selectedDate = DateTime.now();
-  final List<String> currencies = ['USD', 'RUB', 'EUR', 'KZT', 'CHY', 'SOM'];
+  List<String> currencyList = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrencies();
+  }
+
+  Future<void> _loadCurrencies() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Use the existing currencies or load them if they're not loaded yet
+    if (currencies.isEmpty) {
+      await getCurrencies();
+    }
+
+    setState(() {
+      currencyList = getCurrencyCodes();
+      _isLoading = false;
+    });
+  }
 
   Widget _buildDateNavigation() {
     return Row(
@@ -52,7 +76,7 @@ class _EventsViewState extends State<EventsView> {
       'Сентябрь',
       'Октябрь',
       'Ноябрь',
-      'Декабрь'
+      'Декабрь',
     ];
     return months[month - 1];
   }
@@ -65,41 +89,48 @@ class _EventsViewState extends State<EventsView> {
         border: Border.all(color: Colors.black12),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Column(
-        children: [
-          Row(
-            children: const [
-              SizedBox(width: 30),
-              Expanded(child: Text('Куплено')),
-              Expanded(child: Text('Курс покуп.')),
-              Expanded(child: Text('Продано')),
-              Expanded(child: Text('Курс Продаж')),
-              Expanded(child: Text('Остаток')),
-              Expanded(child: Text('Прибыль')),
-            ],
-          ),
-          ...currencies.map((currency) => Row(
+      child:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
                 children: [
-                  SizedBox(width: 35, child: Text(currency)),
-                  ...List.generate(6, (index) {
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 2, vertical: 4),
-                        child: Container(
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                      ),
-                    );
-                  })
+                  Row(
+                    children: const [
+                      SizedBox(width: 30),
+                      Expanded(child: Text('Куплено')),
+                      Expanded(child: Text('Курс покуп.')),
+                      Expanded(child: Text('Продано')),
+                      Expanded(child: Text('Курс Продаж')),
+                      Expanded(child: Text('Остаток')),
+                      Expanded(child: Text('Прибыль')),
+                    ],
+                  ),
+                  ...currencyList.map(
+                    (currency) => Row(
+                      children: [
+                        SizedBox(width: 35, child: Text(currency)),
+                        ...List.generate(6, (index) {
+                          return Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 2,
+                                vertical: 4,
+                              ),
+                              child: Container(
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
                 ],
-              ))
-        ],
-      ),
+              ),
     );
   }
 
@@ -108,10 +139,7 @@ class _EventsViewState extends State<EventsView> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildInfoBox('Касса'),
-          _buildInfoBox('Общая прибыль'),
-        ],
+        children: [_buildInfoBox('Касса'), _buildInfoBox('Общая прибыль')],
       ),
     );
   }
@@ -136,9 +164,7 @@ class _EventsViewState extends State<EventsView> {
   Widget _buildTransactionTable() {
     return Container(
       margin: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black12),
-      ),
+      decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
       child: Column(
         children: [
           Row(
