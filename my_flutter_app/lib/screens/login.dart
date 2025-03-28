@@ -45,15 +45,16 @@ class _LoginViewState extends State<LoginView> {
 
       if (response != null && response.containsKey('token')) {
         final token = response['token']?.toString();
+        final userId = response['user_id']?.toString(); // Ensure user_id is retrieved
 
-        if (token != null && token.isNotEmpty) {
+        if (token != null && token.isNotEmpty && userId != null && userId.isNotEmpty) {
           // Navigate to home screen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeView()),
           );
         } else {
-          _showErrorSnackBar('Invalid token');
+          _showErrorSnackBar('Invalid token or user ID');
         }
       } else {
         _showErrorSnackBar('Authentication failed');

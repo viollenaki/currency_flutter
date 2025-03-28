@@ -1,9 +1,12 @@
+import 'dart:collection';
+import 'dart:convert';
+import 'package:EXCHANGER/scripts/get_token.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:EXCHANGER/screens/history.dart';
 import 'package:EXCHANGER/screens/setting.dart';
 import 'package:EXCHANGER/screens/statictics.dart';
 import 'package:flutter/material.dart';
-import 'events.dart';
-import 'package:EXCHANGER/screens/add_currensy.dart';
 import 'package:EXCHANGER/scripts/get_currencies.dart';
 
 class HomeView extends StatefulWidget {
@@ -13,16 +16,21 @@ class HomeView extends StatefulWidget {
   _HomeViewState createState() => _HomeViewState();
 }
 
+HashMap<String, dynamic> data = HashMap<String, dynamic>();
+
 class _HomeViewState extends State<HomeView> {
   String? _selectedCurrency = 'KGS';
   List<String> _currencyList = ['KGS'];
   bool _isLoading = true;
+  String? _operationType; // "BUY" or "SELL"
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _exchangeRateController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadCurrencies();
-    String a = 'gg';
   }
 
   Future<void> _loadCurrencies() async {
@@ -30,17 +38,111 @@ class _HomeViewState extends State<HomeView> {
       _isLoading = true;
     });
 
-    await getCurrencies();
+    await getCurrencies(); // Fetch currencies from the API
 
     setState(() {
-      _currencyList = getCurrencyCodes();
-      // If selected currency is not in the list, set it to the first item
-      if (!_currencyList.contains(_selectedCurrency) &&
-          _currencyList.isNotEmpty) {
+      _currencyList = getCurrencyCodes(); // Update the currency list
+      if (!_currencyList.contains(_selectedCurrency) && _currencyList.isNotEmpty) {
         _selectedCurrency = _currencyList[0];
       }
       _isLoading = false;
     });
+  }
+
+  Future<void> _addEvent() async {
+    const String url = 'http://192.168.158.129:8000/api/operations/';
+    if (accessToken == null || user_id == null) {
+      _showErrorSnackBar('Token or user ID is missing. Please authenticate first.');
+      return;
+    }
+
+    // Get the selected currency ID
+    int? selectedCurrencyId;
+    currencies.forEach((id, code) {
+      if (code == _selectedCurrency) {
+        selectedCurrencyId = id;
+      }
+    });
+
+    if (selectedCurrencyId == null) {
+      _showErrorSnackBar('Invalid currency selected.');
+      return;
+    }
+
+    final Map<String, dynamic> data = {
+      "amount": double.tryParse(_amountController.text) ?? 0, // Get amount from input
+      "exchange_rate": double.tryParse(_exchangeRateController.text) ?? 0, // Get exchange rate from input
+      "operation_type": _operationType,
+      "description": _descriptionController.text, // Get description from input
+      "user": int.parse(user_id!), // Convert user_id to integer
+      "currency": selectedCurrencyId, // Use the selected currency ID
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Token $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data),
+      );
+
+      if (response.statusCode == 201) {
+        _showSuccessSnackBar('Event added successfully');
+      } else {
+        _showErrorSnackBar('Failed to add event. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Error occurred while adding event: $e');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  Widget _buildCircleAction(String type, String label, Color color) {
+    final bool isSelected = _operationType == type;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _operationType = type;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        width: isSelected ? 80 : 60,
+        height: isSelected ? 80 : 60,
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.grey,
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -49,70 +151,42 @@ class _HomeViewState extends State<HomeView> {
       backgroundColor: const Color(0xFFF9F0E8),
       body: SafeArea(
         child: Center(
-          child:
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : Container(
-                    margin: const EdgeInsets.all(20),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildCircleAction(
-                                Icons.arrow_downward,
-                                'ПОКУПКА',
-                                Colors.green,
-                              ),
-                              _buildCircleAction(
-                                Icons.arrow_upward,
-                                'ПРОДАЖА',
-                                Colors.red,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          _buildDropdownField(_selectedCurrency, _currencyList),
-                          const SizedBox(height: 10),
-                          _buildInputField('Количество'),
-                          const SizedBox(height: 10),
-                          _buildInputField('Курс валюты'),
-                          const SizedBox(height: 10),
-                          _buildInputField('Общий'),
-                          const SizedBox(height: 20),
-                          _buildKeypad(),
-                          const SizedBox(height: 20),
-                          _buildActionButton('Добавить событие'),
-                          const SizedBox(height: 10),
-                          _buildActionButton('События'),
-                        ],
-                      ),
+          child: _isLoading
+              ? const CircularProgressIndicator()
+              : Container(
+                  margin: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildCircleAction("BUY", "ПОКУПКА", Colors.green),
+                            _buildCircleAction("SELL", "ПРОДАЖА", Colors.red),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        _buildDropdownField(_selectedCurrency, _currencyList),
+                        const SizedBox(height: 20),
+                        _buildTextField(_amountController, 'Amount'),
+                        const SizedBox(height: 20),
+                        _buildTextField(_exchangeRateController, 'Exchange Rate'),
+                        const SizedBox(height: 20),
+                        _buildTextField(_descriptionController, 'Description'),
+                        const SizedBox(height: 20),
+                        _buildActionButton('ДОБАВИТЬ СОБЫТИЕ'),
+                      ],
                     ),
                   ),
+                ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
-    );
-  }
-
-  Widget _buildCircleAction(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        CircleAvatar(
-          backgroundColor: color,
-          radius: 30,
-          child: Icon(icon, color: Colors.white),
-        ),
-        const SizedBox(height: 5),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-      ],
     );
   }
 
@@ -127,10 +201,9 @@ class _HomeViewState extends State<HomeView> {
         value: selectedValue,
         isExpanded: true,
         underline: const SizedBox(),
-        items:
-            items.map((currency) {
-              return DropdownMenuItem(value: currency, child: Text(currency));
-            }).toList(),
+        items: items.map((currency) {
+          return DropdownMenuItem(value: currency, child: Text(currency));
+        }).toList(),
         onChanged: (value) {
           setState(() {
             _selectedCurrency = value;
@@ -140,75 +213,20 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildInputField(String hint) {
+  Widget _buildTextField(TextEditingController controller, String label) {
     return TextField(
+      controller: controller,
       decoration: InputDecoration(
-        hintText: hint,
-        filled: true,
-        fillColor: Colors.grey[200],
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 15,
-          vertical: 10,
-        ),
+        labelText: label,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
         ),
+        filled: true,
+        fillColor: Colors.grey[200],
       ),
-    );
-  }
-
-  Widget _buildKeypadButton(String text, {Color? color}) {
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: SizedBox(
-        width: 70,
-        height: 40,
-        child: ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color ?? Colors.grey[400],
-            padding: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-            ),
-          ),
-          child: Text(
-            text,
-            style: TextStyle(
-              color: color != null ? Colors.white : Colors.black,
-              fontSize: 16,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildKeypad() {
-    final keys = [
-      ['1', '2', '3'],
-      ['4', '5', '6'],
-      ['7', '8', '9'],
-      ['0', '00', '000'],
-      ['⌫', '', '↩'],
-    ];
-    return Column(
-      children:
-          keys.map((row) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children:
-                  row.map((key) {
-                    return key.isEmpty
-                        ? const SizedBox(width: 70, height: 40)
-                        : _buildKeypadButton(
-                          key,
-                          color: key == '⌫' || key == '↩' ? Colors.grey : null,
-                        );
-                  }).toList(),
-            );
-          }).toList(),
+      keyboardType: label == 'Amount' || label == 'Exchange Rate'
+          ? TextInputType.number
+          : TextInputType.text,
     );
   }
 
@@ -218,17 +236,11 @@ class _HomeViewState extends State<HomeView> {
       height: 45,
       child: ElevatedButton(
         onPressed: () {
-          if (text == 'Добавить событие') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AddCurrencyView()),
-            );
-          } else if (text == 'События') {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const EventsView()),
-            );
+          if (_operationType == null) {
+            print('Please select an operation type (BUY or SELL)');
+            return;
           }
+          _addEvent();
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue,
