@@ -1,3 +1,6 @@
+import 'package:EXCHANGER/screens/history.dart';
+import 'package:EXCHANGER/screens/setting.dart';
+import 'package:EXCHANGER/screens/statictics.dart';
 import 'package:flutter/material.dart';
 import 'events.dart';
 import 'package:EXCHANGER/screens/add_currensy.dart';
@@ -19,6 +22,7 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     _loadCurrencies();
+    String a = 'gg';
   }
 
   Future<void> _loadCurrencies() async {
@@ -243,6 +247,24 @@ class _HomeViewState extends State<HomeView> {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: Colors.blue,
       unselectedItemColor: Colors.black,
+      onTap: (index) {
+        if (index == 1) { // Index for "История"
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HistoryView()),
+          );
+        } else if (index == 2) { // Index for "Статистика"
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const StaticticsView()),
+          );
+        } else if (index == 3) { // Index for "Настройки"
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SettingsView()),
+          );
+        }
+      },
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.compare_arrows),

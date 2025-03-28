@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 String? accessToken;
 
 Future<Map<String, dynamic>?> getToken(String username, String password) async {
-  const String url = "http://192.168.158.129:8000/api/token/";
+  const String url = "http://192.168.50.114:8000/api/token/";
 
   try {
     final response = await http.post(

@@ -12,7 +12,7 @@ class SettingsView extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context), // Возврат на предыдущий экран
         ),
         title: const Text(
           'Настройки',
@@ -24,26 +24,69 @@ class SettingsView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Кнопка для валют
             _buildButton(context, 'ВАЛЮТЫ', Colors.white, Colors.black),
             const SizedBox(height: 15),
+
+            // Кнопка для пользователей
             _buildButton(context, 'ПОЛЬЗОВАТЕЛИ', Colors.white, Colors.black),
             const SizedBox(height: 15),
+
+            // Кнопка для очистки базы данных
             _buildButton(context, 'ОЧИСТИТЬ БАЗУ ДАННЫХ', Colors.white, Colors.black),
             const SizedBox(height: 15),
+
+            // Пустая кнопка-заглушка
             _buildButton(context, '', Colors.grey[400]!, Colors.black),
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: _buildBottomNav(), // Нижняя панель навигации
     );
   }
 
+  // Метод для отображения диалогового окна при очистке базы данных
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Предупреждение"), // Заголовок диалога
+          content: const Text("Выбранная информация будет удалена навсегда!"), // Основной текст предупреждения
+          actions: [
+            // Кнопка "Отмена" для закрытия диалога
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Закрыть диалог
+              },
+              child: const Text("Отмена"),
+            ),
+
+            // Кнопка "Удалить" для выполнения действия
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 255, 240, 239)), // Красная кнопка
+              onPressed: () {
+                // Логика удаления базы данных
+                Navigator.of(context).pop(); // Закрыть диалог после нажатия
+              },
+              child: const Text("Удалить"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Метод создания кнопки с заданным текстом и цветом
   Widget _buildButton(BuildContext context, String text, Color bgColor, Color textColor) {
     return SizedBox(
       width: 250,
       height: 45,
       child: ElevatedButton(
-        onPressed: text.isNotEmpty ? () {} : null,
+        // Проверка: если кнопка "ОЧИСТИТЬ БАЗУ ДАННЫХ" - показываем диалог
+        onPressed: text == 'ОЧИСТИТЬ БАЗУ ДАННЫХ'
+            ? () => _showDeleteDialog(context) // Показать предупреждение
+            : () {}, // Для других кнопок ничего не делаем
         style: ElevatedButton.styleFrom(
           backgroundColor: bgColor,
           shape: RoundedRectangleBorder(
@@ -60,6 +103,7 @@ class SettingsView extends StatelessWidget {
     );
   }
 
+  // Нижняя панель навигации
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       currentIndex: 3,
