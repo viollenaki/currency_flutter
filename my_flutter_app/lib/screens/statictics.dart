@@ -11,23 +11,7 @@ class StaticticsView extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Container(),  // Пустое тело с цветом фона
-      bottomNavigationBar: _buildBottomNav(),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: 3,
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: Colors.blue,
-      unselectedItemColor: Colors.black,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.compare_arrows), label: 'Продажа/покупка'),
-        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'История'),
-        BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Статистика'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
-      ],
+      body: Container(), // Keep the body content
     );
   }
 }

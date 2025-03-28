@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:EXCHANGER/scripts/globals.dart';
 
 // Global variables to store the access token and user ID
-String? accessToken;
-String? user_id;
 
 Future<Map<String, dynamic>?> getToken(String username, String password) async {
-  const String url = "http://192.168.158.129:8000/api/token/";
+  const String url = "${baseUrl}api/token/";
 
   try {
     final response = await http.post(
@@ -22,6 +21,7 @@ Future<Map<String, dynamic>?> getToken(String username, String password) async {
 
       // Extract and save the access token and user ID
       accessToken = responseData['token'];
+      isStuff = responseData['is_staff'] ?? false; // Ensure is_staff is a boolean
       user_id = responseData['user_id']?.toString(); // Ensure user_id is stored as a string
 
       print('Authentication successful: $responseData');

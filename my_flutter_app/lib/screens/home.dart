@@ -8,6 +8,8 @@ import 'package:EXCHANGER/screens/setting.dart';
 import 'package:EXCHANGER/screens/statictics.dart';
 import 'package:flutter/material.dart';
 import 'package:EXCHANGER/scripts/get_currencies.dart';
+import 'package:EXCHANGER/scripts/globals.dart';
+import 'package:flutter/services.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -42,7 +44,8 @@ class _HomeViewState extends State<HomeView> {
 
     setState(() {
       _currencyList = getCurrencyCodes(); // Update the currency list
-      if (!_currencyList.contains(_selectedCurrency) && _currencyList.isNotEmpty) {
+      if (!_currencyList.contains(_selectedCurrency) &&
+          _currencyList.isNotEmpty) {
         _selectedCurrency = _currencyList[0];
       }
       _isLoading = false;
@@ -50,9 +53,22 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> _addEvent() async {
-    const String url = 'http://192.168.158.129:8000/api/operations/';
+    const String url = '${baseUrl}api/operations/';
     if (accessToken == null || user_id == null) {
-      _showErrorSnackBar('Token or user ID is missing. Please authenticate first.');
+      _showSnackBar(
+          'Error: Token or user ID is missing. Please authenticate first.');
+      return;
+    }
+
+    // Validate input fields
+    if (_operationType == null) {
+      _showSnackBar('Error: Please choose an operation type (BUY or SELL).');
+      return;
+    }
+    if (_amountController.text.isEmpty ||
+        _exchangeRateController.text.isEmpty ||
+        _descriptionController.text.isEmpty) {
+      _showSnackBar('Error: Please fill in all the fields.');
       return;
     }
 
@@ -65,17 +81,17 @@ class _HomeViewState extends State<HomeView> {
     });
 
     if (selectedCurrencyId == null) {
-      _showErrorSnackBar('Invalid currency selected.');
+      _showSnackBar('Error: Invalid currency selected.');
       return;
     }
 
     final Map<String, dynamic> data = {
-      "amount": double.tryParse(_amountController.text) ?? 0, // Get amount from input
-      "exchange_rate": double.tryParse(_exchangeRateController.text) ?? 0, // Get exchange rate from input
+      "amount": double.tryParse(_amountController.text) ?? 0,
+      "exchange_rate": double.tryParse(_exchangeRateController.text) ?? 0,
       "operation_type": _operationType,
-      "description": _descriptionController.text, // Get description from input
-      "user": int.parse(user_id!), // Convert user_id to integer
-      "currency": selectedCurrencyId, // Use the selected currency ID
+      "description": _descriptionController.text,
+      "user": int.parse(user_id!),
+      "currency": selectedCurrencyId,
     };
 
     try {
@@ -89,32 +105,31 @@ class _HomeViewState extends State<HomeView> {
       );
 
       if (response.statusCode == 201) {
-        _showSuccessSnackBar('Event added successfully');
+        _showSnackBar('Success: Operation added successfully.');
+        _clearInputs(); // Clear all input fields
       } else {
-        _showErrorSnackBar('Failed to add event. Status code: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        _showSnackBar(
+            'Error: Failed to add operation. Status code: ${response.statusCode}');
       }
     } catch (e) {
-      _showErrorSnackBar('Error occurred while adding event: $e');
+      _showSnackBar('Error: An error occurred while adding the operation: $e');
     }
   }
 
-  void _showErrorSnackBar(String message) {
+  void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message)),
     );
   }
 
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
+  void _clearInputs() {
+    setState(() {
+      _amountController.clear();
+      _exchangeRateController.clear();
+      _descriptionController.clear();
+      _operationType = null;
+      _selectedCurrency = _currencyList.isNotEmpty ? _currencyList[0] : null;
+    });
   }
 
   Widget _buildCircleAction(String type, String label, Color color) {
@@ -138,7 +153,8 @@ class _HomeViewState extends State<HomeView> {
         child: Center(
           child: Text(
             label,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       ),
@@ -176,7 +192,8 @@ class _HomeViewState extends State<HomeView> {
                         const SizedBox(height: 20),
                         _buildTextField(_amountController, 'Amount'),
                         const SizedBox(height: 20),
-                        _buildTextField(_exchangeRateController, 'Exchange Rate'),
+                        _buildTextField(
+                            _exchangeRateController, 'Exchange Rate'),
                         const SizedBox(height: 20),
                         _buildTextField(_descriptionController, 'Description'),
                         const SizedBox(height: 20),
@@ -225,8 +242,15 @@ class _HomeViewState extends State<HomeView> {
         fillColor: Colors.grey[200],
       ),
       keyboardType: label == 'Amount' || label == 'Exchange Rate'
-          ? TextInputType.number
+          ? TextInputType.numberWithOptions(
+              decimal: true) // Show numeric keyboard with decimal
           : TextInputType.text,
+      inputFormatters: label == 'Amount' || label == 'Exchange Rate'
+          ? [
+              FilteringTextInputFormatter.allow(
+                  RegExp(r'^\d*\.?\d*')), // Allow digits and a single dot
+            ]
+          : null,
     );
   }
 
@@ -235,60 +259,19 @@ class _HomeViewState extends State<HomeView> {
       width: double.infinity,
       height: 45,
       child: ElevatedButton(
-        onPressed: () {
-          if (_operationType == null) {
-            print('Please select an operation type (BUY or SELL)');
-            return;
-          }
-          _addEvent();
-        },
+        onPressed: _operationType == null
+            ? null
+            : () {
+                _addEvent();
+              },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
+          backgroundColor: _operationType == null ? Colors.grey : Colors.blue,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
         ),
         child: Text(text, style: const TextStyle(color: Colors.white)),
       ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: Colors.blue,
-      unselectedItemColor: Colors.black,
-      onTap: (index) {
-        if (index == 1) { // Index for "История"
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const HistoryView()),
-          );
-        } else if (index == 2) { // Index for "Статистика"
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const StaticticsView()),
-          );
-        } else if (index == 3) { // Index for "Настройки"
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SettingsView()),
-          );
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.compare_arrows),
-          label: 'Продажа/покупка',
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'История'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.bar_chart),
-          label: 'Статистика',
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
-      ],
     );
   }
 }
