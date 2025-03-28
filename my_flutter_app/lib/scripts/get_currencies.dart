@@ -1,11 +1,12 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'get_token.dart'; // Import the file that provides authentication token
 
 // Make it public for access from other files
-List<dynamic> currencies = [];
+HashMap<int, String> currencies = HashMap<int, String>();
 
-Future<Map<String, dynamic>?> getCurrencies() async {
+Future<void> getCurrencies() async {
   const String url = 'http://192.168.158.129:8000/api/currencies/';
   try {
     // Get the authentication token
@@ -13,9 +14,9 @@ Future<Map<String, dynamic>?> getCurrencies() async {
 
     if (tokenResponse == null || !tokenResponse.containsKey('token')) {
       print('Failed to get authentication token');
-      return null;
+      return;
     }
-    
+
     final String token = tokenResponse['token'];
 
     // Make the API request with the authorization header
@@ -27,19 +28,18 @@ Future<Map<String, dynamic>?> getCurrencies() async {
     );
 
     if (response.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(response.body);
+      final List<dynamic> results = json.decode(response.body)['results'];
       // Store the currencies from the results array
-      currencies = responseData['results'];
-      print('Currencies received: $currencies');
-      return responseData;
+      currencies.clear(); // Clear existing data
+      for (var entry in results) {
+        currencies[entry['id']] = entry['code'];
+      }
     } else {
       print('Failed to get currencies. Status code: ${response.statusCode}');
       print('Response body: ${response.body}');
-      return null;
     }
   } catch (e) {
     print('Error occurred while getting currencies: $e');
-    return null;
   }
 }
 
@@ -51,7 +51,5 @@ List<String> getCurrencyCodes() {
   }
 
   // Extract currency codes from the API response
-  return currencies
-      .map<String>((currency) => currency['code'] as String)
-      .toList();
+  return currencies.values.toList();
 }
