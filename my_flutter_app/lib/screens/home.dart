@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'events.dart';
 import 'package:EXCHANGER/screens/add_currensy.dart';
-import 'package:EXCHANGER/screens/setting.dart';
-import 'package:EXCHANGER/screens/history.dart';
-import 'package:EXCHANGER/screens/Statictics.dart';
-
-
+import 'package:EXCHANGER/scripts/get_currencies.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -15,8 +11,33 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  String? _selectedCurrency = 'USD';
-  final List<String> _currencies = ['USD', 'EUR', 'RUB'];
+  String? _selectedCurrency = 'KGS';
+  List<String> _currencyList = ['KGS'];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrencies();
+  }
+
+  Future<void> _loadCurrencies() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    await getCurrencies();
+
+    setState(() {
+      _currencyList = getCurrencyCodes();
+      // If selected currency is not in the list, set it to the first item
+      if (!_currencyList.contains(_selectedCurrency) &&
+          _currencyList.isNotEmpty) {
+        _selectedCurrency = _currencyList[0];
+      }
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,44 +45,53 @@ class _HomeViewState extends State<HomeView> {
       backgroundColor: const Color(0xFFF9F0E8),
       body: SafeArea(
         child: Center(
-          child: Container(
-            margin: const EdgeInsets.all(20),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildCircleAction(
-                          Icons.arrow_downward, 'ПОКУПКА', Colors.green),
-                      _buildCircleAction(
-                          Icons.arrow_upward, 'ПРОДАЖА', Colors.red),
-                    ],
+          child:
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : Container(
+                    margin: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildCircleAction(
+                                Icons.arrow_downward,
+                                'ПОКУПКА',
+                                Colors.green,
+                              ),
+                              _buildCircleAction(
+                                Icons.arrow_upward,
+                                'ПРОДАЖА',
+                                Colors.red,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          _buildDropdownField(_selectedCurrency, _currencyList),
+                          const SizedBox(height: 10),
+                          _buildInputField('Количество'),
+                          const SizedBox(height: 10),
+                          _buildInputField('Курс валюты'),
+                          const SizedBox(height: 10),
+                          _buildInputField('Общий'),
+                          const SizedBox(height: 20),
+                          _buildKeypad(),
+                          const SizedBox(height: 20),
+                          _buildActionButton('Добавить событие'),
+                          const SizedBox(height: 10),
+                          _buildActionButton('События'),
+                        ],
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  _buildDropdownField(_selectedCurrency, _currencies),
-                  const SizedBox(height: 10),
-                  _buildInputField('Количество'),
-                  const SizedBox(height: 10),
-                  _buildInputField('Курс валюты'),
-                  const SizedBox(height: 10),
-                  _buildInputField('Общий'),
-                  const SizedBox(height: 20),
-                  _buildKeypad(),
-                  const SizedBox(height: 20),
-                  _buildActionButton('Добавить событие'),
-                  const SizedBox(height: 10),
-                  _buildActionButton('События'),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
       bottomNavigationBar: _buildBottomNav(),
@@ -93,12 +123,10 @@ class _HomeViewState extends State<HomeView> {
         value: selectedValue,
         isExpanded: true,
         underline: const SizedBox(),
-        items: items.map((currency) {
-          return DropdownMenuItem(
-            value: currency,
-            child: Text(currency),
-          );
-        }).toList(),
+        items:
+            items.map((currency) {
+              return DropdownMenuItem(value: currency, child: Text(currency));
+            }).toList(),
         onChanged: (value) {
           setState(() {
             _selectedCurrency = value;
@@ -114,8 +142,10 @@ class _HomeViewState extends State<HomeView> {
         hintText: hint,
         filled: true,
         fillColor: Colors.grey[200],
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 10,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -160,17 +190,21 @@ class _HomeViewState extends State<HomeView> {
       ['⌫', '', '↩'],
     ];
     return Column(
-      children: keys.map((row) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: row.map((key) {
-            return key.isEmpty
-                ? const SizedBox(width: 70, height: 40)
-                : _buildKeypadButton(key,
-                    color: key == '⌫' || key == '↩' ? Colors.grey : null);
+      children:
+          keys.map((row) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children:
+                  row.map((key) {
+                    return key.isEmpty
+                        ? const SizedBox(width: 70, height: 40)
+                        : _buildKeypadButton(
+                          key,
+                          color: key == '⌫' || key == '↩' ? Colors.grey : null,
+                        );
+                  }).toList(),
+            );
           }).toList(),
-        );
-      }).toList(),
     );
   }
 
@@ -198,47 +232,29 @@ class _HomeViewState extends State<HomeView> {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        child: Text(
-          text,
-          style: const TextStyle(color: Colors.white),
-        ),
+        child: Text(text, style: const TextStyle(color: Colors.white)),
       ),
     );
   }
 
   Widget _buildBottomNav() {
-  return BottomNavigationBar(
-    currentIndex: 0,
-    type: BottomNavigationBarType.fixed,
-    selectedItemColor: Colors.blue,
-    unselectedItemColor: Colors.black,
-    onTap: (index) {
-      if (index == 1) { // Индекс кнопки "История"
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const HistoryView()),
-        );
-      } else if (index == 3) { // Индекс кнопки "Настройки"
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SettingsView()),
-        );
-      }
-      else{
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) =>StaticticsView()),
-        );
-      }
-    },
-    items: const [
-      BottomNavigationBarItem(icon: Icon(Icons.compare_arrows), label: 'Продажа/покупка'),
-      BottomNavigationBarItem(icon: Icon(Icons.history), label: 'История'),
-      BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Статистика'),
-      BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
-    ],
-  );
-}
-
-
+    return BottomNavigationBar(
+      currentIndex: 0,
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: Colors.blue,
+      unselectedItemColor: Colors.black,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.compare_arrows),
+          label: 'Продажа/покупка',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'История'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.bar_chart),
+          label: 'Статистика',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
+      ],
+    );
+  }
 }

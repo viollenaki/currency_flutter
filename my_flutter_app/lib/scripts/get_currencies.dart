@@ -6,7 +6,7 @@ import 'get_token.dart'; // Import the file that provides authentication token
 List<dynamic> currencies = [];
 
 Future<Map<String, dynamic>?> getCurrencies() async {
-  const String url = 'http://192.168.51.116:8000/api/currencies/';
+  const String url = 'http://192.168.158.129:8000/api/currencies/';
   try {
     // Get the authentication token
     final Map<String, dynamic>? tokenResponse = await getToken('qwe', 'qwe'); // Pass required credentials

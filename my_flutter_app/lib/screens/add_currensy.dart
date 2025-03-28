@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:EXCHANGER/scripts/get_currencies.dart';
 
 class AddCurrencyView extends StatefulWidget {
   const AddCurrencyView({Key? key}) : super(key: key);
@@ -10,7 +11,30 @@ class AddCurrencyView extends StatefulWidget {
 class _AddCurrencyViewState extends State<AddCurrencyView> {
   final TextEditingController _newCurrencyController = TextEditingController();
   String? _selectedCurrency;
-  final List<String> _currencies = ['USD', 'EUR', 'RUB'];
+  List<String> _currencyList = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrencies();
+  }
+
+  Future<void> _loadCurrencies() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Use the existing currencies or load them if they're not loaded yet
+    if (currencies.isEmpty) {
+      await getCurrencies();
+    }
+
+    setState(() {
+      _currencyList = getCurrencyCodes();
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,50 +49,52 @@ class _AddCurrencyViewState extends State<AddCurrencyView> {
         ),
       ),
       body: Center(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          margin: const EdgeInsets.all(30),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildDropdown(),
-              const SizedBox(height: 10),
-              _buildTextField('Новая валюты', _newCurrencyController),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 45,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Logic to add currency
-                    Navigator.pop(context); // Return to HomeView
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+        child: _isLoading
+            ? const CircularProgressIndicator()
+            : Container(
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.all(30),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
                     ),
-                  ),
-                  child: const Text(
-                    'Добавить валюту',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildDropdown(),
+                    const SizedBox(height: 10),
+                    _buildTextField('Новая валюты', _newCurrencyController),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 45,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Logic to add currency
+                          Navigator.pop(context); // Return to HomeView
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Добавить валюту',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
       ),
       bottomNavigationBar: _buildBottomNav(),
     );
@@ -86,11 +112,8 @@ class _AddCurrencyViewState extends State<AddCurrencyView> {
         hint: const Text('Валюты'),
         isExpanded: true,
         underline: const SizedBox(),
-        items: _currencies.map((currency) {
-          return DropdownMenuItem(
-            value: currency,
-            child: Text(currency),
-          );
+        items: _currencyList.map((currency) {
+          return DropdownMenuItem(value: currency, child: Text(currency));
         }).toList(),
         onChanged: (value) {
           setState(() {
@@ -108,8 +131,10 @@ class _AddCurrencyViewState extends State<AddCurrencyView> {
         hintText: hint,
         filled: true,
         fillColor: Colors.grey[200],
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 10,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -126,10 +151,14 @@ class _AddCurrencyViewState extends State<AddCurrencyView> {
       unselectedItemColor: Colors.black,
       items: const [
         BottomNavigationBarItem(
-            icon: Icon(Icons.compare_arrows), label: 'Продажа/покупка'),
+          icon: Icon(Icons.compare_arrows),
+          label: 'Продажа/покупка',
+        ),
         BottomNavigationBarItem(icon: Icon(Icons.history), label: 'История'),
         BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart), label: 'Статистика'),
+          icon: Icon(Icons.bar_chart),
+          label: 'Статистика',
+        ),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
       ],
     );
