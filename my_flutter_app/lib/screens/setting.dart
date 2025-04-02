@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:EXCHANGER/scripts/get_currencies.dart';
 import 'package:EXCHANGER/scripts/globals.dart';
 import 'package:http/http.dart' as http;
+import 'package:EXCHANGER/screens/currency_modal.dart';
+import 'package:EXCHANGER/screens/users_page.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({Key? key}) : super(key: key);
@@ -29,7 +30,13 @@ class SettingsView extends StatelessWidget {
               'ВАЛЮТА',
               Colors.white,
               Colors.black,
-              () => _showCurrencyModal(context),
+              () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const CurrencyPage(),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 15),
 
@@ -39,7 +46,13 @@ class SettingsView extends StatelessWidget {
               'ПОЛЬЗОВАТЕЛИ',
               Colors.white,
               Colors.black,
-              () => _showUsersPage(context),
+              () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const UsersPage(),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 15),
 
@@ -53,101 +66,6 @@ class SettingsView extends StatelessWidget {
                 () => _showDeleteDialog(context),
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-  // Show modal page for "ВАЛЮТА"
-  void _showCurrencyModal(BuildContext context) async {
-    // Fetch currencies from the API
-    await getCurrencies();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (BuildContext context) {
-        final TextEditingController _currencyController =
-            TextEditingController();
-
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-          ),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height *
-                0.5, // Set modal height to 50% of screen height
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Валюты',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: currencies.length,
-                    itemBuilder: (context, index) {
-                      final currencyCode = currencies.values.toList()[index];
-                      return ListTile(
-                        title: Text(currencyCode),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _currencyController,
-                  decoration: InputDecoration(
-                    labelText: 'Добавить валюту',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    final newCurrency = _currencyController.text.trim();
-                    if (newCurrency.isNotEmpty) {
-                      // Add the new currency to the currencies map
-                      currencies[currencies.length + 1] = newCurrency;
-                      Navigator.of(context).pop(); // Close the modal
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text('Валюта $newCurrency добавлена')),
-                      );
-                    }
-                  },
-                  child: const Text('Добавить'),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // Show empty page for "ПОЛЬЗОВАТЕЛИ"
-  void _showUsersPage(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(
-            title: const Text('Пользователи'),
-            centerTitle: true,
-          ),
-          body: const Center(
-            child: Text('Страница пользователей пока пуста'),
-          ),
         ),
       ),
     );
@@ -198,18 +116,21 @@ class SettingsView extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        // Show success message
+        // Show success message with response data
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('База данных успешно очищена')),
+          SnackBar(
+              content: Text('База данных успешно очищена: ${response.body}')),
         );
       } else {
-        // Show error message
+        // Show error message with response data
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: ${response.body}')),
+          SnackBar(
+              content:
+                  Text('Ошибка: ${response.statusCode}, ${response.body}')),
         );
       }
     } catch (e) {
-      // Show error message
+      // Show exception message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Ошибка при очистке базы данных: $e')),
       );

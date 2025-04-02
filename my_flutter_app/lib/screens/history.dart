@@ -57,7 +57,7 @@ class _HistoryViewState extends State<HistoryView> {
                 0.5, // Set modal height to 50% of screen height
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
+                children: [
                 const Text(
                   'Валюты',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -65,36 +65,48 @@ class _HistoryViewState extends State<HistoryView> {
                 const SizedBox(height: 16),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: currencies.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(currencies[index]),
-                      );
-                    },
+                  itemCount: currencies.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                    title: Text(currencies[index]),
+                    );
+                  },
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _currencyController,
                   decoration: InputDecoration(
-                    labelText: 'Добавить валюту',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  labelText: 'Добавить валюту',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () {
-                    final newCurrency = _currencyController.text.trim();
-                    if (newCurrency.isNotEmpty) {
-                      currencies.add(newCurrency); // Add the new currency
-                      Navigator.of(context).pop(); // Close the modal
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text('Валюта $newCurrency добавлена')),
-                      );
+                  onPressed: () async {
+                  final newCurrency = _currencyController.text.trim();
+                  if (newCurrency.isNotEmpty) {
+                    try {
+                    // Add your API call here to add the currency
+                    // Example: await addCurrency(newCurrency);
+                    currencies.add(newCurrency); // Add the new currency locally
+                    Navigator.of(context).pop(); // Close the modal
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Валюта $newCurrency добавлена')),
+                    );
+                    } catch (e) {
+                    // Handle any errors from the API request
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Ошибка при добавлении валюты: $e')),
+                    );
                     }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Введите код валюты')),
+                    );
+                  }
                   },
                   child: const Text('Добавить'),
                 ),

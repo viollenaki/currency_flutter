@@ -21,3 +21,4 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - lib/screens/users_page.dart
